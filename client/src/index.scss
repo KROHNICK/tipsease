@@ -7,6 +7,7 @@
 
 //====== Components ======//
 @import 'Components/LoginSignupHeader.scss';
+@import 'Components/Nav.scss';
 
 //====== Views ======//
 @import 'Views/LoginPage.scss';
@@ -14,3 +15,5 @@
 @import 'Views/ServiceProviderViews/WalletPage.scss';
 @import 'Views/CustomerViews/SearchServiceProviderPage.scss';
 @import 'Views/CustomerViews/TipPage.scss';
+@import 'Views/CustomerViews/SelectPaymentMethod.scss';
+@import 'Views/CustomerViews/PaymentPage.scss';

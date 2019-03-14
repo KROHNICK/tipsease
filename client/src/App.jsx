@@ -3,14 +3,11 @@
 // Customer => 1c5bc292728db250bf56c216870babab
 
 import React, {Component} from "react";
-import {Switch, Route, Redirect} from "react-router-dom";
+import {Switch, Route} from "react-router-dom";
 import {loadProgressBar} from "axios-progress-bar";
 import axios from "axios";
 import firebase from "./config/fire";
 import {withCookies} from "react-cookie";
-
-// HOC Imports
-import PrivateRoute from "./HOC/PrivateRoute";
 
 // View imports
 import SignUpPage from "./Views/SignUpPage";
@@ -19,11 +16,11 @@ import ShowCodePage from "./Views/ServiceProviderViews/ShowCodePage";
 import TipPage from "./Views/CustomerViews/TipPage";
 import Profile from "./Views/ProfilePage";
 import Payment from "./Views/CustomerViews/PaymentSuccessPage";
+import SelectPaymentMethod from "./Views/CustomerViews/SelectPaymentMethod";
 import SearchServiceProviderPage from "./Views/CustomerViews/SearchServiceProviderPage";
 
 // CSS imports
 import "axios-progress-bar/dist/nprogress.css";
-import PaymentSuccess from "./Views/CustomerViews/PaymentSuccessPage";
 
 class App extends Component {
   state = {
@@ -34,7 +31,7 @@ class App extends Component {
     payFlow: {
       tip: 5,
       user_id: "",
-      username: '',
+      username: "",
     },
   };
 
@@ -108,7 +105,11 @@ class App extends Component {
         username: username,
       },
     });
-    sessionStorage.setItem("payFlow", {...this.state.payFlow, user_id: uid, username: username});
+    sessionStorage.setItem("payFlow", {
+      ...this.state.payFlow,
+      user_id: uid,
+      username: username,
+    });
   };
 
   render() {
@@ -132,26 +133,25 @@ class App extends Component {
           exact
           path="/wallet"
           render={props => (
-            <WalletPage {...props} uid={this.state.userId} cookies={this.props.cookies.getAll()} />
+            <WalletPage
+              {...props}
+              uid={this.state.userId}
+              cookies={this.props.cookies.getAll()}
+            />
           )}
-        />
-        <Route
-          exact
-          path="/wallet/code"
-          render={props => <ShowCodePage {...props} />}
         />
         <Route
           exact
           path="/payment"
           render={props => <Payment data={this.state.payFlow} />}
         />
-        {/*
-        //! Needs to be done with other hoc
-        <PrivateRoute
+        <Route
           exact
           path="/profile"
-          component={props => <Profile {...props} userId={this.state.userId} />}
-        /> */}
+          render={props => (
+            <Profile {...props} cookies={this.props.cookies.getAll()} />
+          )}
+        />
         <Route
           exact
           path="/find"

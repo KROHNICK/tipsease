@@ -1,25 +1,62 @@
 import React, {Component} from "react";
 import * as moment from "moment";
 import axios from "axios";
+import Skeleton from "react-loading-skeleton";
+import WalletHistoryLoad from "../../Components/WalletHistoryLoad";
+import WalletHistory from "../../Components/WalletHistory";
 
 class WalletPage extends Component {
   state = {
+    isLoading: true,
+    isLoadingHistory: true,
     balance: null,
+    username: null,
+    showUsername: false,
+    transactions: [],
   };
 
   componentDidMount() {
-    const headers = {
-      token: this.props.cookies._uat,
-    }
-    console.log(headers);
     axios
-      .get(`http://localhost:3300/api/transactions/${ this.props.cookies._uid }`, headers)
+      .get(`https://tipsease.herokuapp.com/api/users/${
+        this.props.cookies._uid
+      }`,
+      {
+        headers: {
+          token: this.props.cookies._uat,
+        },
+      },)
       .then(res => {
-        console.log(res)
+        this.setState({
+          ...this.state,
+          username: res.data.username,
+          balance: res.data.balance,
+          isLoading: false,
+        });
       })
       .catch(err => {
         console.log(err);
       })
+    axios
+      .get(
+        `https://tipsease.herokuapp.com/api/transactions/${
+          this.props.cookies._uid
+        }`,
+        {
+          headers: {
+            token: this.props.cookies._uat,
+          },
+        },
+      )
+      .then(res => {
+        this.setState({
+          ...this.state,
+          transactions: res.data,
+          isLoadingHistory: false,
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   tipHandler = () => {
@@ -27,45 +64,20 @@ class WalletPage extends Component {
   };
 
   showCodeHandler = () => {
-    this.props.history.push("/wallet/code");
+    this.setState({
+      ...this.state,
+      showUsername: !this.state.showUsername,
+    });
   };
 
   render() {
-    // Empty Array, signifying previous transactions. To be used to `map()` below.
-    const transactions = [
-      {
-        receivedOrSent: "received",
-        amount: 69,
-        sender: "Isaac Aszimov",
-        timeStamp: "2019-03-12 01:06:39",
-      },
-      {
-        receivedOrSent: "received",
-        amount: 52,
-        sender: "William Jones",
-        timeStamp: "2019-03-12 01:06:39",
-      },
-      {
-        receivedOrSent: "received",
-        amount: 46,
-        sender: "Isaac Henry",
-        timeStamp: "2019-03-12 01:06:39",
-      },
-    ];
-    const testUser = [
-      {
-        name: "John",
-        balance: 50,
-      },
-    ];
-    console.log(this.props)
     return (
       <section className="view">
         <section className="wallet-top">
           <h2>Welcome</h2>
           <div className="card full-width">
             <p>Your Current Tipsease Balance is:</p>
-
+            {this.state.isLoading && <Skeleton width={100} height={70} />}
             {this.state.balance && (
               <div className="balance-container">
                 <span>$</span>
@@ -79,27 +91,22 @@ class WalletPage extends Component {
 
         <section className="card wallet-bottom full-width">
           <h4>Latest Transactions:</h4>
-          {transactions.map((transaction, idx) => (
-            <div className="transaction-container" key={idx}>
-              <div className="avatar">{transaction.sender[0]}</div>
-              <div className="left-container">
-                <p className="transaction-person">{transaction.sender}</p>
-                <p className="transaction-time small-text">
-                  Completed&nbsp;
-                  {moment(transaction.timeStamp).format("DD MMM")}
-                </p>
-              </div>
-              <div className="right-container">
-                <h4 className="transaction-amount">
-                  {transaction.receivedOrSent === "received" ? "+" : "-"}$
-                  {transaction.amount}
-                </h4>
-              </div>
-            </div>
+          {this.state.isLoadingHistory && <WalletHistoryLoad />}
+          {this.state.transactions.map(el => (
+            <WalletHistory tip={el.tip} date={el.created_at} />
           ))}
-          <button className="secondary" onClick={this.showCodeHandler}>
-            Show Your Code
-          </button>
+          {this.state.isLoading && (
+            <button className="secondary">
+              <Skeleton />
+            </button>
+          )}
+          {!this.state.isLoading && (
+            <button className="secondary" onClick={this.showCodeHandler}>
+              {this.state.showUsername
+                ? `@${this.state.username}`
+                : "Show Code"}
+            </button>
+          )}
         </section>
       </section>
     );

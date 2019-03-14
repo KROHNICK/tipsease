@@ -68,9 +68,7 @@ router.post("/register", (req, res) => {
 router.get("/:id", decode1, (req, res) => {
   if (req.params.id == req.headers.UID)
     db("users")
-      .where({
-        uid: req.params.id
-      })
+      .where("uid", "=", req.params.id)
       .then(user => {
         res.status(200).json(user[0]);
       })
